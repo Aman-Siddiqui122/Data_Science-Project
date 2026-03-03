@@ -1,14 +1,14 @@
 from src.Data_Science import *
 from src.Data_Science.constants import *
 from src.Data_Science.utils.common import read_yaml, create_directories
-from src.Data_Science.entity.config_entity import DataIngestionConfig,DataValidationConfig,DataTransformationConfig
+from src.Data_Science.entity.config_entity import DataIngestionConfig,DataValidationConfig,DataTransformationConfig,ModelTrainerConfig
 import os
 import zipfile
 import urllib.request as request
 
 class ConfigurationManager:
     def __init__(self,
-                 config_filepath=  CONFIG_FILE_PATH,
+                 config_filepath=CONFIG_FILE_PATH,
                  params_filepath = PARAMS_FILE_PATH,
                  schema_filepath = SCHEMA_FILE_PATH):
         self.config = read_yaml(config_filepath)
@@ -30,8 +30,7 @@ class ConfigurationManager:
 
         )
         return data_ingestion_config
-
-
+    
     def get_data_validation_config(self) -> DataValidationConfig:
         config = self.config.data_validation
         schema = self.schema.COLUMNS
@@ -46,7 +45,6 @@ class ConfigurationManager:
         )
 
         return data_validation_config
-
     
     def get_data_transformation_config(self) -> DataTransformationConfig:
         config = self.config.data_transformation
@@ -59,3 +57,23 @@ class ConfigurationManager:
         )
 
         return data_transformation_config
+
+    def get_model_trainer_config(self) -> ModelTrainerConfig:
+        config = self.config.model_trainer
+        params = self.params.ElasticNet
+        schema =  self.schema.TARGET_COLUMN
+
+        create_directories([config.root_dir])
+
+        model_trainer_config = ModelTrainerConfig(
+            root_dir=config.root_dir,
+            train_data_path = config.train_data_path,
+            test_data_path = config.test_data_path,
+            model_name = config.model_name,
+            alpha = params.alpha,
+            l1_ratio = params.l1_ratio,
+            target_column = schema.name
+            
+        )
+
+        return model_trainer_config
