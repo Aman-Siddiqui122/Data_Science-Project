@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Wine Quality Predictor</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --wine:        #6B1A2A;
+      --wine-dark:   #3D0B14;
+      --wine-light:  #A63248;
+      --gold:        #C9A84C;
+      --gold-light:  #E8D5A3;
+      --cream:       #F7F0E6;
+      --ink:         #1A0A0E;
+      --glass:       rgba(255,255,255,0.06);
+      --border:      rgba(201,168,76,0.25);
+    }
+
+    html, body {
+      min-height: 100vh;
+      font-family: 'Montserrat', sans-serif;
+      background: var(--wine-dark);
+      color: var(--cream);
+      overflow-x: hidden;
+    }
+
+    /* ── Background ── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 10%, rgba(107,26,42,0.55) 0%, transparent 70%),
+        radial-gradient(ellipse 60% 80% at 85% 90%, rgba(166,50,72,0.35) 0%, transparent 65%),
+        radial-gradient(ellipse 40% 40% at 50% 50%, rgba(201,168,76,0.08) 0%, transparent 60%),
+        linear-gradient(160deg, #1A0408 0%, #2A0810 40%, #1A0408 100%);
+    }
+
+    /* subtle noise */
+    body::after {
+      content: '';
+      position: fixed; inset: 0; z-index: 1;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+      pointer-events: none;
+    }
+
+    /* ── Page wrapper ── */
+    .page {
+      position: relative; z-index: 2;
+      min-height: 100vh;
+      display: flex; flex-direction: column; align-items: center;
+      padding: 60px 20px 80px;
+    }
+
+    /* ── Header ── */
+    .header {
+      text-align: center;
+      margin-bottom: 56px;
+      animation: fadeDown 0.9s ease both;
+    }
+
+    .header-eyebrow {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 16px;
+    }
+
+    .header h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(42px, 7vw, 72px);
+      font-weight: 300;
+      line-height: 1.05;
+      color: var(--cream);
+      letter-spacing: -0.01em;
+    }
+
+    .header h1 em {
+      font-style: italic;
+      color: var(--gold-light);
+    }
+
+    .header-line {
+      width: 60px; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      margin: 24px auto 20px;
+    }
+
+    .header p {
+      font-size: 13px;
+      font-weight: 300;
+      letter-spacing: 0.08em;
+      color: rgba(247,240,230,0.5);
+      max-width: 340px;
+      margin: 0 auto;
+      line-height: 1.7;
+    }
+
+    /* ── Card ── */
+    .card {
+      width: 100%; max-width: 780px;
+      background: var(--glass);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      padding: 52px 56px 56px;
+      animation: fadeUp 0.9s 0.2s ease both;
+      box-shadow:
+        0 0 0 1px rgba(201,168,76,0.06) inset,
+        0 40px 80px rgba(0,0,0,0.5),
+        0 0 120px rgba(107,26,42,0.2);
+    }
+
+    @media (max-width: 600px) {
+      .card { padding: 36px 24px 40px; }
+    }
+
+    /* ── Section label ── */
+    .section-label {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 24px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .section-label::after {
+      content: '';
+      flex: 1; height: 1px;
+      background: linear-gradient(90deg, var(--border), transparent);
+    }
+
+    /* ── Grid ── */
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px 28px;
+      margin-bottom: 20px;
+    }
+
+    .grid-single {
+      grid-template-columns: 1fr;
+    }
+
+    @media (max-width: 520px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+
+    /* ── Field ── */
+    .field {
+      display: flex; flex-direction: column; gap: 8px;
+      animation: fadeUp 0.6s ease both;
+    }
+
+    .field:nth-child(1)  { animation-delay: 0.30s }
+    .field:nth-child(2)  { animation-delay: 0.35s }
+    .field:nth-child(3)  { animation-delay: 0.40s }
+    .field:nth-child(4)  { animation-delay: 0.45s }
+    .field:nth-child(5)  { animation-delay: 0.50s }
+    .field:nth-child(6)  { animation-delay: 0.55s }
+    .field:nth-child(7)  { animation-delay: 0.60s }
+    .field:nth-child(8)  { animation-delay: 0.65s }
+    .field:nth-child(9)  { animation-delay: 0.70s }
+    .field:nth-child(10) { animation-delay: 0.75s }
+    .field:nth-child(11) { animation-delay: 0.80s }
+
+    label {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(247,240,230,0.55);
+    }
+
+    input[type="text"] {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(201,168,76,0.18);
+      border-radius: 2px;
+      padding: 13px 16px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 13px;
+      font-weight: 400;
+      color: var(--cream);
+      outline: none;
+      transition: border-color 0.25s, background 0.25s, box-shadow 0.25s;
+      width: 100%;
+    }
+
+    input[type="text"]::placeholder {
+      color: rgba(247,240,230,0.2);
+      font-style: italic;
+    }
+
+    input[type="text"]:focus {
+      border-color: var(--gold);
+      background: rgba(201,168,76,0.06);
+      box-shadow: 0 0 0 3px rgba(201,168,76,0.1);
+    }
+
+    input[type="text"]:hover:not(:focus) {
+      border-color: rgba(201,168,76,0.35);
+    }
+
+    /* ── Divider ── */
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border), transparent);
+      margin: 36px 0 32px;
+    }
+
+    /* ── Submit ── */
+    .submit-wrap {
+      display: flex; justify-content: center;
+      animation: fadeUp 0.6s 0.85s ease both;
+    }
+
+    button[type="submit"] {
+      position: relative;
+      background: transparent;
+      border: 1px solid var(--gold);
+      color: var(--gold);
+      font-family: 'Montserrat', sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      padding: 16px 52px;
+      cursor: pointer;
+      overflow: hidden;
+      transition: color 0.35s;
+      border-radius: 2px;
+    }
+
+    button[type="submit"]::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: var(--gold);
+      transform: translateX(-101%);
+      transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
+      z-index: 0;
+    }
+
+    button[type="submit"]:hover { color: var(--ink); }
+    button[type="submit"]:hover::before { transform: translateX(0); }
+
+    button[type="submit"] span { position: relative; z-index: 1; }
+
+    /* ── Train link ── */
+    .train-link {
+      text-align: center;
+      margin-top: 28px;
+      animation: fadeUp 0.6s 0.95s ease both;
+    }
+
+    .train-link a {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(247,240,230,0.3);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .train-link a:hover { color: var(--gold); }
+
+    /* ── Keyframes ── */
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+
+    <header class="header">
+      <p class="header-eyebrow">Machine Learning · Data Science</p>
+      <h1>Wine Quality<br><em>Predictor</em></h1>
+      <div class="header-line"></div>
+      <p>Enter the chemical properties of your wine sample to receive an AI-powered quality assessment.</p>
+    </header>
+
+    <div class="card">
+      <form action="/predict" method="post">
+
+        <p class="section-label">Acidity & Composition</p>
+        <div class="grid">
+          <div class="field">
+            <label for="fixed_acidity">Fixed Acidity</label>
+            <input type="text" name="fixed_acidity" id="fixed_acidity" placeholder="e.g. 7.4" required />
+          </div>
+          <div class="field">
+            <label for="volatile_acidity">Volatile Acidity</label>
+            <input type="text" name="volatile_acidity" id="volatile_acidity" placeholder="e.g. 0.70" required />
+          </div>
+          <div class="field">
+            <label for="citric_acid">Citric Acid</label>
+            <input type="text" name="citric_acid" id="citric_acid" placeholder="e.g. 0.00" required />
+          </div>
+          <div class="field">
+            <label for="residual_sugar">Residual Sugar</label>
+            <input type="text" name="residual_sugar" id="residual_sugar" placeholder="e.g. 1.9" required />
+          </div>
+        </div>
+
+        <div class="divider"></div>
+        <p class="section-label">Sulfur & Minerals</p>
+        <div class="grid">
+          <div class="field">
+            <label for="chlorides">Chlorides</label>
+            <input type="text" name="chlorides" id="chlorides" placeholder="e.g. 0.076" required />
+          </div>
+          <div class="field">
+            <label for="free_sulfur_dioxide">Free Sulfur Dioxide</label>
+            <input type="text" name="free_sulfur_dioxide" id="free_sulfur_dioxide" placeholder="e.g. 11.0" required />
+          </div>
+          <div class="field">
+            <label for="total_sulfur_dioxide">Total Sulfur Dioxide</label>
+            <input type="text" name="total_sulfur_dioxide" id="total_sulfur_dioxide" placeholder="e.g. 34.0" required />
+          </div>
+          <div class="field">
+            <label for="sulphates">Sulphates</label>
+            <input type="text" name="sulphates" id="sulphates" placeholder="e.g. 0.56" required />
+          </div>
+        </div>
+
+        <div class="divider"></div>
+        <p class="section-label">Physical Properties</p>
+        <div class="grid">
+          <div class="field">
+            <label for="density">Density</label>
+            <input type="text" name="density" id="density" placeholder="e.g. 0.9978" required />
+          </div>
+          <div class="field">
+            <label for="pH">pH Level</label>
+            <input type="text" name="pH" id="pH" placeholder="e.g. 3.51" required />
+          </div>
+          <div class="field" style="grid-column: 1 / -1; max-width: 340px;">
+            <label for="alcohol">Alcohol (%)</label>
+            <input type="text" name="alcohol" id="alcohol" placeholder="e.g. 9.4" required />
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="submit-wrap">
+          <button type="submit"><span>Analyse Wine Quality</span></button>
+        </div>
+
+      </form>
+    </div>
+
+    <div class="train-link">
+      <a href="/train">↑ Retrain Model Pipeline</a>
+    </div>
+
+  </div>
+</body>
+</html>

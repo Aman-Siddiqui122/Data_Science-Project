@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Wine Quality Result</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --wine:       #6B1A2A;
+      --wine-dark:  #3D0B14;
+      --wine-light: #A63248;
+      --gold:       #C9A84C;
+      --gold-light: #E8D5A3;
+      --cream:      #F7F0E6;
+      --ink:        #1A0A0E;
+      --glass:      rgba(255,255,255,0.06);
+      --border:     rgba(201,168,76,0.25);
+    }
+
+    html, body {
+      min-height: 100vh;
+      font-family: 'Montserrat', sans-serif;
+      background: var(--wine-dark);
+      color: var(--cream);
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 10%, rgba(107,26,42,0.55) 0%, transparent 70%),
+        radial-gradient(ellipse 60% 80% at 85% 90%, rgba(166,50,72,0.35) 0%, transparent 65%),
+        radial-gradient(ellipse 40% 40% at 50% 50%, rgba(201,168,76,0.08) 0%, transparent 60%),
+        linear-gradient(160deg, #1A0408 0%, #2A0810 40%, #1A0408 100%);
+    }
+
+    body::after {
+      content: '';
+      position: fixed; inset: 0; z-index: 1;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+      pointer-events: none;
+    }
+
+    .page {
+      position: relative; z-index: 2;
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 60px 20px;
+    }
+
+    /* ── Result card ── */
+    .result-card {
+      width: 100%; max-width: 540px;
+      text-align: center;
+      animation: scaleIn 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    }
+
+    /* wine glass SVG icon */
+    .glass-icon {
+      width: 64px; height: 64px;
+      margin: 0 auto 36px;
+      opacity: 0;
+      animation: fadeUp 0.5s 0.3s ease both;
+    }
+
+    .glass-icon svg { width: 100%; height: 100%; }
+
+    /* ── Card box ── */
+    .box {
+      background: var(--glass);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      padding: 56px 52px 52px;
+      box-shadow:
+        0 0 0 1px rgba(201,168,76,0.06) inset,
+        0 40px 80px rgba(0,0,0,0.55),
+        0 0 120px rgba(107,26,42,0.25);
+      opacity: 0;
+      animation: fadeUp 0.6s 0.15s ease both;
+    }
+
+    @media (max-width: 500px) { .box { padding: 40px 28px 36px; } }
+
+    .eyebrow {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 20px;
+    }
+
+    .title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(28px, 5vw, 38px);
+      font-weight: 300;
+      color: var(--cream);
+      letter-spacing: -0.01em;
+      margin-bottom: 8px;
+    }
+
+    .title em {
+      font-style: italic;
+      color: var(--gold-light);
+    }
+
+    /* ── Score ring ── */
+    .score-wrap {
+      margin: 40px auto;
+      position: relative;
+      width: 160px; height: 160px;
+    }
+
+    .score-ring {
+      width: 100%; height: 100%;
+      transform: rotate(-90deg);
+    }
+
+    .ring-bg {
+      fill: none;
+      stroke: rgba(201,168,76,0.12);
+      stroke-width: 3;
+    }
+
+    .ring-fill {
+      fill: none;
+      stroke: var(--gold);
+      stroke-width: 3;
+      stroke-linecap: round;
+      stroke-dasharray: 408;
+      stroke-dashoffset: 408;
+      animation: drawRing 1.2s 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+
+    @keyframes drawRing {
+      to { stroke-dashoffset: var(--ring-offset, 163); }
+    }
+
+    .score-inner {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+    }
+
+    .score-number {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 52px;
+      font-weight: 300;
+      color: var(--cream);
+      line-height: 1;
+      letter-spacing: -0.02em;
+    }
+
+    .score-label {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: rgba(247,240,230,0.4);
+      margin-top: 4px;
+    }
+
+    /* ── Quality badge ── */
+    .quality-badge {
+      display: inline-block;
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 8px 24px;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--gold);
+      background: rgba(201,168,76,0.08);
+      margin-bottom: 32px;
+    }
+
+    /* ── Divider ── */
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border), transparent);
+      margin: 32px 0;
+    }
+
+    /* ── Description ── */
+    .description {
+      font-size: 13px;
+      font-weight: 300;
+      line-height: 1.8;
+      color: rgba(247,240,230,0.55);
+      letter-spacing: 0.03em;
+    }
+
+    /* ── Back button ── */
+    .back-wrap {
+      margin-top: 36px;
+      opacity: 0;
+      animation: fadeUp 0.5s 0.7s ease both;
+    }
+
+    .btn-back {
+      display: inline-block;
+      border: 1px solid var(--gold);
+      color: var(--gold);
+      font-family: 'Montserrat', sans-serif;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      padding: 14px 44px;
+      text-decoration: none;
+      border-radius: 2px;
+      position: relative; overflow: hidden;
+      transition: color 0.3s;
+    }
+
+    .btn-back::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: var(--gold);
+      transform: translateX(-101%);
+      transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+      z-index: 0;
+    }
+
+    .btn-back:hover { color: var(--ink); }
+    .btn-back:hover::before { transform: translateX(0); }
+    .btn-back span { position: relative; z-index: 1; }
+
+    /* ── Keyframes ── */
+    @keyframes scaleIn {
+      from { opacity: 0; transform: scale(0.94); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+
+    <div class="result-card">
+
+      <div class="glass-icon">
+        <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M20 8 L44 8 L38 30 Q38 40 32 40 Q26 40 26 30 Z" stroke="#C9A84C" stroke-width="1.5" fill="rgba(201,168,76,0.08)" stroke-linejoin="round"/>
+          <path d="M32 40 L32 54" stroke="#C9A84C" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M22 54 L42 54" stroke="#C9A84C" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M20 8 Q32 22 44 8" stroke="#C9A84C" stroke-width="1" fill="none" opacity="0.4"/>
+        </svg>
+      </div>
+
+      <div class="box">
+        <p class="eyebrow">Analysis Complete</p>
+        <h1 class="title">Quality <em>Assessment</em></h1>
+
+        <!-- Score ring — the JS sets --ring-offset based on prediction/10 -->
+        <div class="score-wrap" id="scoreWrap">
+          <svg class="score-ring" viewBox="0 0 136 136">
+            <circle class="ring-bg" cx="68" cy="68" r="65"/>
+            <circle class="ring-fill" id="ringFill" cx="68" cy="68" r="65"/>
+          </svg>
+          <div class="score-inner">
+            <span class="score-number" id="scoreNum">{{ prediction }}</span>
+            <span class="score-label">Score</span>
+          </div>
+        </div>
+
+        <div class="quality-badge" id="qualityBadge">Evaluating…</div>
+
+        <div class="divider"></div>
+
+        <p class="description" id="desc">
+          Your wine sample has been analysed against our trained model.
+          The score reflects the predicted quality on a scale of 0 – 10.
+        </p>
+      </div>
+
+      <div class="back-wrap">
+        <a href="/" class="btn-back"><span>← Analyse Another</span></a>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // Parse prediction value (handles arrays like "[7]" or plain numbers)
+    const raw = "{{ prediction }}";
+    const match = raw.match(/[\d.]+/);
+    const score = match ? parseFloat(match[0]) : null;
+
+    if (score !== null) {
+      // Update displayed number
+      document.getElementById('scoreNum').textContent = score;
+
+      // Compute ring offset: circumference ≈ 408, fill = score/10 * 408
+      const pct = Math.min(Math.max(score / 10, 0), 1);
+      const offset = 408 - pct * 408;
+      document.getElementById('ringFill').style.setProperty('--ring-offset', offset);
+      document.getElementById('ringFill').style.cssText += `--ring-offset: ${offset}`;
+      // Re-trigger animation by force-setting the custom property
+      const ring = document.getElementById('ringFill');
+      ring.style.setProperty('--ring-offset', offset);
+
+      // Quality label & description
+      const badge = document.getElementById('qualityBadge');
+      const desc  = document.getElementById('desc');
+
+      let label, description;
+      if (score >= 8) {
+        label = 'Exceptional Quality';
+        description = 'An outstanding wine with superior chemical balance. This sample exhibits characteristics typical of premium selections.';
+      } else if (score >= 6) {
+        label = 'Good Quality';
+        description = 'A well-balanced wine with pleasing characteristics. The chemical profile suggests a pleasant and drinkable experience.';
+      } else if (score >= 4) {
+        label = 'Average Quality';
+        description = 'This wine shows moderate characteristics. While drinkable, the chemical profile indicates some imbalance that may affect the overall experience.';
+      } else {
+        label = 'Below Average';
+        description = 'The analysis indicates below-average quality. The chemical composition suggests significant imbalances that may impact taste and aroma.';
+      }
+
+      badge.textContent = label;
+      desc.textContent  = description;
+    }
+  </script>
+</body>
+</html>
