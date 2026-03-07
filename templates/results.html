@@ -3,337 +3,257 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Wine Quality Result</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <title>Vintage Insight – Quality Assessment</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
-      --wine:       #6B1A2A;
-      --wine-dark:  #3D0B14;
-      --wine-light: #A63248;
-      --gold:       #C9A84C;
-      --gold-light: #E8D5A3;
-      --cream:      #F7F0E6;
-      --ink:        #1A0A0E;
-      --glass:      rgba(255,255,255,0.06);
-      --border:     rgba(201,168,76,0.25);
+      --bg: #0f0810;
+      --card: rgba(25, 18, 28, 0.68);
+      --accent: #c79f3a;
+      --accent-dark: #a67c1f;
+      --text: #f0e9d2;
+      --text-light: #c9b89e;
+      --border: rgba(199, 159, 58, 0.18);
+      --glow: rgba(199, 159, 58, 0.14);
     }
 
-    html, body {
-      min-height: 100vh;
-      font-family: 'Montserrat', sans-serif;
-      background: var(--wine-dark);
-      color: var(--cream);
-      overflow-x: hidden;
+    * { margin:0; padding:0; box-sizing:border-box; }
+
+    body {
+      min-height: 100dvh;
+      background: linear-gradient(135deg, #0f0810, #140b16);
+      color: var(--text);
+      font-family: 'Inter', system-ui, sans-serif;
+      display: grid;
+      place-items: center;
+      padding: 2rem 1.5rem;
     }
 
-    body::before {
-      content: '';
-      position: fixed; inset: 0; z-index: 0;
-      background:
-        radial-gradient(ellipse 80% 60% at 20% 10%, rgba(107,26,42,0.55) 0%, transparent 70%),
-        radial-gradient(ellipse 60% 80% at 85% 90%, rgba(166,50,72,0.35) 0%, transparent 65%),
-        radial-gradient(ellipse 40% 40% at 50% 50%, rgba(201,168,76,0.08) 0%, transparent 60%),
-        linear-gradient(160deg, #1A0408 0%, #2A0810 40%, #1A0408 100%);
-    }
-
-    body::after {
-      content: '';
-      position: fixed; inset: 0; z-index: 1;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
-      pointer-events: none;
-    }
-
-    .page {
-      position: relative; z-index: 2;
-      min-height: 100vh;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      padding: 60px 20px;
-    }
-
-    /* ── Result card ── */
-    .result-card {
-      width: 100%; max-width: 540px;
+    .result-container {
+      width: 100%;
+      max-width: 580px;
       text-align: center;
-      animation: scaleIn 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both;
     }
 
-    /* wine glass SVG icon */
     .glass-icon {
-      width: 64px; height: 64px;
-      margin: 0 auto 36px;
+      width: 88px;
+      height: 88px;
+      margin: 0 auto 2.5rem;
       opacity: 0;
-      animation: fadeUp 0.5s 0.3s ease both;
+      animation: pop-in 0.9s 0.4s forwards ease-out;
     }
 
-    .glass-icon svg { width: 100%; height: 100%; }
-
-    /* ── Card box ── */
-    .box {
-      background: var(--glass);
+    .card {
+      background: var(--card);
+      backdrop-filter: blur(18px);
       border: 1px solid var(--border);
-      border-radius: 4px;
-      backdrop-filter: blur(24px);
-      -webkit-backdrop-filter: blur(24px);
-      padding: 56px 52px 52px;
-      box-shadow:
-        0 0 0 1px rgba(201,168,76,0.06) inset,
-        0 40px 80px rgba(0,0,0,0.55),
-        0 0 120px rgba(107,26,42,0.25);
-      opacity: 0;
-      animation: fadeUp 0.6s 0.15s ease both;
+      border-radius: 20px;
+      padding: 3.2rem 2.8rem 3.4rem;
+      box-shadow: 0 24px 70px rgba(0,0,0,0.6),
+                  inset 0 0 0 1px rgba(199,159,58,0.07);
+      animation: card-pop 1s 0.2s backwards cubic-bezier(0.34,1.56,0.64,1);
     }
-
-    @media (max-width: 500px) { .box { padding: 40px 28px 36px; } }
 
     .eyebrow {
-      font-size: 9px;
+      font-size: 0.78rem;
       font-weight: 600;
-      letter-spacing: 0.35em;
+      letter-spacing: 0.16em;
       text-transform: uppercase;
-      color: var(--gold);
-      margin-bottom: 20px;
+      color: var(--accent);
+      margin-bottom: 1.1rem;
     }
 
-    .title {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: clamp(28px, 5vw, 38px);
-      font-weight: 300;
-      color: var(--cream);
+    h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.6rem, 6vw, 4.2rem);
+      font-weight: 500;
+      margin-bottom: 0.4rem;
       letter-spacing: -0.01em;
-      margin-bottom: 8px;
     }
 
-    .title em {
+    h1 span {
+      color: var(--accent);
       font-style: italic;
-      color: var(--gold-light);
     }
 
-    /* ── Score ring ── */
-    .score-wrap {
-      margin: 40px auto;
+    .score-circle {
       position: relative;
-      width: 160px; height: 160px;
+      width: 180px;
+      height: 180px;
+      margin: 3rem auto 2.2rem;
     }
 
-    .score-ring {
-      width: 100%; height: 100%;
+    svg {
+      width: 100%;
+      height: 100%;
       transform: rotate(-90deg);
     }
 
-    .ring-bg {
+    circle.bg {
       fill: none;
-      stroke: rgba(201,168,76,0.12);
-      stroke-width: 3;
+      stroke: rgba(199,159,58,0.09);
+      stroke-width: 8;
     }
 
-    .ring-fill {
+    circle.progress {
       fill: none;
-      stroke: var(--gold);
-      stroke-width: 3;
+      stroke: var(--accent);
+      stroke-width: 8;
       stroke-linecap: round;
-      stroke-dasharray: 408;
-      stroke-dashoffset: 408;
-      animation: drawRing 1.2s 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+      stroke-dasharray: 490;
+      stroke-dashoffset: 490;
+      transition: stroke-dashoffset 1.4s cubic-bezier(0.3,0,0.1,1) 0.6s;
     }
 
-    @keyframes drawRing {
-      to { stroke-dashoffset: var(--ring-offset, 163); }
+    .score-value {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Playfair Display', serif;
+      font-size: 4.8rem;
+      font-weight: 500;
+      color: white;
+      line-height: 0.9;
     }
 
-    .score-inner {
-      position: absolute; inset: 0;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
+    .score-value small {
+      font-size: 1.1rem;
+      font-weight: 400;
+      color: var(--text-light);
+      margin-top: 0.6rem;
+      letter-spacing: 0.05em;
     }
 
-    .score-number {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 52px;
-      font-weight: 300;
-      color: var(--cream);
-      line-height: 1;
-      letter-spacing: -0.02em;
-    }
-
-    .score-label {
-      font-size: 9px;
-      font-weight: 600;
-      letter-spacing: 0.25em;
-      text-transform: uppercase;
-      color: rgba(247,240,230,0.4);
-      margin-top: 4px;
-    }
-
-    /* ── Quality badge ── */
-    .quality-badge {
+    .quality-tag {
       display: inline-block;
-      border: 1px solid var(--border);
-      border-radius: 100px;
-      padding: 8px 24px;
-      font-size: 10px;
+      padding: 0.65rem 1.8rem;
+      border-radius: 50rem;
+      background: rgba(199,159,58,0.12);
+      border: 1px solid rgba(199,159,58,0.3);
+      color: var(--accent);
+      font-size: 0.92rem;
       font-weight: 600;
-      letter-spacing: 0.25em;
-      text-transform: uppercase;
-      color: var(--gold);
-      background: rgba(201,168,76,0.08);
-      margin-bottom: 32px;
+      letter-spacing: 0.06em;
+      margin: 1.4rem 0 2.2rem;
     }
 
-    /* ── Divider ── */
-    .divider {
-      height: 1px;
-      background: linear-gradient(90deg, transparent, var(--border), transparent);
-      margin: 32px 0;
-    }
-
-    /* ── Description ── */
     .description {
-      font-size: 13px;
-      font-weight: 300;
-      line-height: 1.8;
-      color: rgba(247,240,230,0.55);
-      letter-spacing: 0.03em;
-    }
-
-    /* ── Back button ── */
-    .back-wrap {
-      margin-top: 36px;
-      opacity: 0;
-      animation: fadeUp 0.5s 0.7s ease both;
+      font-size: 1.05rem;
+      line-height: 1.65;
+      color: var(--text-light);
+      max-width: 480px;
+      margin: 0 auto 2.8rem;
     }
 
     .btn-back {
       display: inline-block;
-      border: 1px solid var(--gold);
-      color: var(--gold);
-      font-family: 'Montserrat', sans-serif;
-      font-size: 10px;
+      padding: 1rem 2.2rem;
+      font-size: 0.94rem;
       font-weight: 600;
-      letter-spacing: 0.3em;
-      text-transform: uppercase;
-      padding: 14px 44px;
+      color: white;
+      background: linear-gradient(90deg, #6b3e0f, #8c5518, #6b3e0f);
+      background-size: 200%;
+      border: none;
+      border-radius: 12px;
       text-decoration: none;
-      border-radius: 2px;
-      position: relative; overflow: hidden;
-      transition: color 0.3s;
+      transition: all 0.4s ease;
     }
 
-    .btn-back::before {
-      content: '';
-      position: absolute; inset: 0;
-      background: var(--gold);
-      transform: translateX(-101%);
-      transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
-      z-index: 0;
+    .btn-back:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(120,70,20,0.35);
+      background-position: right center;
     }
 
-    .btn-back:hover { color: var(--ink); }
-    .btn-back:hover::before { transform: translateX(0); }
-    .btn-back span { position: relative; z-index: 1; }
-
-    /* ── Keyframes ── */
-    @keyframes scaleIn {
-      from { opacity: 0; transform: scale(0.94); }
-      to   { opacity: 1; transform: scale(1); }
+    @keyframes pop-in {
+      0%   { opacity:0; transform:scale(0.5) translateY(20px); }
+      70%  { transform:scale(1.12); }
+      100% { opacity:1; transform:none; }
     }
 
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(16px); }
-      to   { opacity: 1; transform: translateY(0); }
+    @keyframes card-pop {
+      0%   { opacity:0; transform:scale(0.92) translateY(40px); }
+      100% { opacity:1; transform:none; }
     }
   </style>
 </head>
 <body>
-  <div class="page">
 
-    <div class="result-card">
+<div class="result-container">
 
-      <div class="glass-icon">
-        <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M20 8 L44 8 L38 30 Q38 40 32 40 Q26 40 26 30 Z" stroke="#C9A84C" stroke-width="1.5" fill="rgba(201,168,76,0.08)" stroke-linejoin="round"/>
-          <path d="M32 40 L32 54" stroke="#C9A84C" stroke-width="1.5" stroke-linecap="round"/>
-          <path d="M22 54 L42 54" stroke="#C9A84C" stroke-width="1.5" stroke-linecap="round"/>
-          <path d="M20 8 Q32 22 44 8" stroke="#C9A84C" stroke-width="1" fill="none" opacity="0.4"/>
-        </svg>
-      </div>
+  <svg class="glass-icon" viewBox="0 0 100 100" fill="none">
+    <path d="M30 10 L70 10 L62 45 Q62 60 50 60 Q38 60 38 45 Z" stroke="#c79f3a" stroke-width="3" fill="rgba(199,159,58,0.08)"/>
+    <path d="M50 60 L50 85" stroke="#c79f3a" stroke-width="3" stroke-linecap="round"/>
+    <path d="M35 85 L65 85" stroke="#c79f3a" stroke-width="3" stroke-linecap="round"/>
+  </svg>
 
-      <div class="box">
-        <p class="eyebrow">Analysis Complete</p>
-        <h1 class="title">Quality <em>Assessment</em></h1>
+  <div class="card">
+    <div class="eyebrow">Vintage Insight</div>
+    <h1>Quality <span>Assessment</span></h1>
 
-        <!-- Score ring — the JS sets --ring-offset based on prediction/10 -->
-        <div class="score-wrap" id="scoreWrap">
-          <svg class="score-ring" viewBox="0 0 136 136">
-            <circle class="ring-bg" cx="68" cy="68" r="65"/>
-            <circle class="ring-fill" id="ringFill" cx="68" cy="68" r="65"/>
-          </svg>
-          <div class="score-inner">
-            <span class="score-number" id="scoreNum">{{ prediction }}</span>
-            <span class="score-label">Score</span>
-          </div>
-        </div>
-
-        <div class="quality-badge" id="qualityBadge">Evaluating…</div>
-
-        <div class="divider"></div>
-
-        <p class="description" id="desc">
-          Your wine sample has been analysed against our trained model.
-          The score reflects the predicted quality on a scale of 0 – 10.
-        </p>
-      </div>
-
-      <div class="back-wrap">
-        <a href="/" class="btn-back"><span>← Analyse Another</span></a>
+    <div class="score-circle">
+      <svg viewBox="0 0 180 180">
+        <circle class="bg" cx="90" cy="90" r="81"/>
+        <circle class="progress" cx="90" cy="90" r="81" id="progress"/>
+      </svg>
+      <div class="score-value">
+        <span id="score">{{ prediction }}</span>
+        <small>/ 10</small>
       </div>
     </div>
 
+    <div class="quality-tag" id="tag">Evaluating…</div>
+
+    <p class="description" id="desc">
+      Your wine has been evaluated with precision and elegance by Vintage Insight.
+    </p>
+
+    <a href="/" class="btn-back">Explore Another Vintage</a>
   </div>
 
-  <script>
-    // Parse prediction value (handles arrays like "[7]" or plain numbers)
-    const raw = "{{ prediction }}";
-    const match = raw.match(/[\d.]+/);
-    const score = match ? parseFloat(match[0]) : null;
+</div>
 
-    if (score !== null) {
-      // Update displayed number
-      document.getElementById('scoreNum').textContent = score;
+<script>
+  const raw = "{{ prediction }}";
+  const match = raw.match(/[\d.]+/);
+  let score = match ? parseFloat(match[0]) : 0;
 
-      // Compute ring offset: circumference ≈ 408, fill = score/10 * 408
-      const pct = Math.min(Math.max(score / 10, 0), 1);
-      const offset = 408 - pct * 408;
-      document.getElementById('ringFill').style.setProperty('--ring-offset', offset);
-      document.getElementById('ringFill').style.cssText += `--ring-offset: ${offset}`;
-      // Re-trigger animation by force-setting the custom property
-      const ring = document.getElementById('ringFill');
-      ring.style.setProperty('--ring-offset', offset);
+  score = Math.max(0, Math.min(10, score));
 
-      // Quality label & description
-      const badge = document.getElementById('qualityBadge');
-      const desc  = document.getElementById('desc');
+  document.getElementById("score").textContent = score.toFixed(1);
 
-      let label, description;
-      if (score >= 8) {
-        label = 'Exceptional Quality';
-        description = 'An outstanding wine with superior chemical balance. This sample exhibits characteristics typical of premium selections.';
-      } else if (score >= 6) {
-        label = 'Good Quality';
-        description = 'A well-balanced wine with pleasing characteristics. The chemical profile suggests a pleasant and drinkable experience.';
-      } else if (score >= 4) {
-        label = 'Average Quality';
-        description = 'This wine shows moderate characteristics. While drinkable, the chemical profile indicates some imbalance that may affect the overall experience.';
-      } else {
-        label = 'Below Average';
-        description = 'The analysis indicates below-average quality. The chemical composition suggests significant imbalances that may impact taste and aroma.';
-      }
+  const circumference = 490;
+  const offset = circumference - (score / 10) * circumference;
+  document.getElementById("progress").style.strokeDashoffset = offset;
 
-      badge.textContent = label;
-      desc.textContent  = description;
-    }
-  </script>
+  let tagText = "";
+  let description = "";
+
+  if (score >= 8.0) {
+    tagText = "Exceptional • Timeless";
+    description = "A truly remarkable vintage. Exceptional balance and complexity — worthy of the finest cellars.";
+  } else if (score >= 6.5) {
+    tagText = "Very Good";
+    description = "A refined and enjoyable wine with strong character and harmonious structure.";
+  } else if (score >= 5.0) {
+    tagText = "Good • Reliable";
+    description = "Solid everyday quality with pleasant traits and only minor imperfections.";
+  } else if (score >= 4.0) {
+    tagText = "Average";
+    description = "Decent but unremarkable. Noticeable imbalances limit its potential.";
+  } else {
+    tagText = "Below Average";
+    description = "Significant flaws detected in the chemical profile. Likely to disappoint.";
+  }
+
+  document.getElementById("tag").textContent = tagText;
+  document.getElementById("desc").textContent = description;
+</script>
+
 </body>
 </html>
